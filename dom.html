@@ -1,0 +1,60 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DOM Methods Example</title>
+</head>
+<body>
+
+<script>
+  // Dark theme
+  document.body.style.margin = "0";
+  document.body.style.backgroundColor = "#121212";
+  document.body.style.color = "#ffffff";
+  document.body.style.fontFamily = "Arial, sans-serif";
+  document.body.style.display = "flex";
+  document.body.style.flexDirection = "column";
+  document.body.style.justifyContent = "center";
+  document.body.style.alignItems = "center";
+  document.body.style.height = "100vh";
+
+  // Create heading
+  const heading = document.createElement("h1");
+  heading.textContent = "DOM Methods Example";
+  heading.style.marginBottom = "20px";
+
+  // Create button
+  const button = document.createElement("button");
+  button.textContent = "Click Me";
+
+  // Style button
+  button.style.padding = "12px 24px";
+  button.style.fontSize = "18px";
+  button.style.backgroundColor = "#1f6feb";
+  button.style.color = "#ffffff";
+  button.style.border = "none";
+  button.style.borderRadius = "8px";
+  button.style.cursor = "pointer";
+
+  // Button events
+  button.addEventListener("mouseover", () => {
+    button.style.backgroundColor = "#388bfd";
+  });
+
+  button.addEventListener("mouseout", () => {
+    button.style.backgroundColor = "#1f6feb";
+  });
+
+  button.addEventListener("click", () => {
+    alert("Button clicked!");
+  });
+
+  // Add elements to the page
+  document.body.appendChild(heading);
+  document.body.appendChild(button);
+</script>
+
+</body>
+</html>
