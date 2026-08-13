@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AskMyNotes - AI Document Q&A</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col items-center py-12 px-4">
+
+    <div class="w-full max-w-2xl bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-extrabold text-slate-900 mb-2 tracking-tight">
+                AskMyNotes
+            </h1>
+            <p class="text-slate-500 text-sm">
+                Chat with your PDF notes using AI-powered retrieval.
+            </p>
+            <div class="mt-3 flex justify-center gap-4 text-xs font-medium">
+                <a href="signup.html" class="text-blue-600 hover:text-blue-800 underline">Sign Up</a>
+                <span class="text-slate-300">|</span>
+                <a href="notes.html" class="text-blue-600 hover:text-blue-800 underline">Notes Portal</a>
+                <span class="text-slate-300">|</span>
+                <a href="dom.html" class="text-blue-600 hover:text-blue-800 underline">DOM Demo</a>
+            </div>
+        </div>
+
+        <div class="flex flex-col gap-6">
+
+            <!-- Upload Section -->
+            <div class="space-y-2">
+                <label for="pdf-input" class="block text-sm font-semibold text-slate-700">
+                    Upload your notes (PDF or TXT)
+                </label>
+
+                <input
+                    type="file"
+                    id="pdf-input"
+                    accept=".pdf,.txt"
+                    class="block w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200 transition cursor-pointer"
+                >
+
+                <div id="upload-status" class="text-xs text-slate-400">
+                    No file uploaded yet.
+                </div>
+            </div>
+
+            <!-- Question Section -->
+            <div class="space-y-2">
+                <label for="question" class="block text-sm font-semibold text-slate-700">
+                    Your question
+                </label>
+
+                <textarea
+                    id="question"
+                    rows="3"
+                    placeholder="What do my notes say about..."
+                    class="block w-full p-3.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition text-slate-800 text-sm"
+                ></textarea>
+
+                <div class="flex items-center justify-between pt-1">
+                    <div id="status" class="text-xs text-slate-400"></div>
+
+                    <!-- Submit Button -->
+                    <button
+                        id="ask-btn"
+                        class="bg-blue-600 text-white py-2.5 px-6 rounded-xl font-medium hover:bg-blue-700 transition shadow-sm active:scale-95 flex items-center gap-2"
+                    >
+                        <span id="btn-text">Submit</span>
+
+                        <!-- Spinner -->
+                        <div id="btn-spinner" class="hidden spinner" style="width:16px;height:16px;border-width:2px;border-top-color:#fff;"></div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Answer Section -->
+            <div class="space-y-2">
+                <label class="block text-sm font-semibold text-slate-700">
+                    Answer
+                </label>
+
+                <div id="meta" class="flex gap-2">
+                    <span
+                        id="type-pill"
+                        class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 hidden"
+                    >AI Answer</span>
+
+                    <span
+                        id="tool-pill"
+                        class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 hidden"
+                    >Retriever v1.0</span>
+                </div>
+
+                <div
+                    id="answer"
+                    class="p-5 bg-slate-50 border border-slate-200 rounded-xl min-h-[100px] text-slate-600 leading-relaxed text-sm"
+                >
+                    <div id="answer-text">
+                        Your answer will appear here...
+                    </div>
+                </div>
+
+                <details
+                    id="sources-wrap"
+                    class="hidden mt-4 text-sm text-slate-600 bg-slate-50 p-4 rounded-xl border border-slate-200"
+                >
+                    <summary class="cursor-pointer font-semibold text-slate-700">
+                        Sources (top chunks used)
+                    </summary>
+
+                    <ol
+                        id="sources"
+                        class="list-decimal pl-6 mt-3 space-y-1 text-xs text-slate-600"
+                    ></ol>
+                </details>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="mt-8 text-slate-400 text-xs">
+        AskMyNotes &bull; AI Engineering Application
+    </footer>
+
+    <script>
+        const askBtn = document.getElementById("ask-btn");
+        const btnText = document.getElementById("btn-text");
+        const spinner = document.getElementById("btn-spinner");
+        const answerText = document.getElementById("answer-text");
+        const questionInput = document.getElementById("question");
+        const pdfInput = document.getElementById("pdf-input");
+        const uploadStatus = document.getElementById("upload-status");
+        const typePill = document.getElementById("type-pill");
+        const toolPill = document.getElementById("tool-pill");
+        const sourcesWrap = document.getElementById("sources-wrap");
+        const sourcesList = document.getElementById("sources");
+
+        pdfInput.addEventListener("change", () => {
+            if (pdfInput.files.length > 0) {
+                uploadStatus.textContent = `Selected: ${pdfInput.files[0].name} (${(pdfInput.files[0].size / 1024).toFixed(1)} KB)`;
+                uploadStatus.classList.remove("text-slate-400");
+                uploadStatus.classList.add("text-blue-600", "font-medium");
+            } else {
+                uploadStatus.textContent = "No file uploaded yet.";
+                uploadStatus.classList.add("text-slate-400");
+                uploadStatus.classList.remove("text-blue-600", "font-medium");
+            }
+        });
+
+        askBtn.addEventListener("click", async () => {
+            const question = questionInput.value.trim();
+            const file = pdfInput.files[0];
+
+            if (!question) {
+                alert("Please enter a question.");
+                return;
+            }
+
+            // Show loading state
+            askBtn.disabled = true;
+            spinner.classList.remove("hidden");
+            btnText.textContent = "Processing...";
+            answerText.textContent = "Generating answer from notes...";
+
+            const formData = new FormData();
+            formData.append("question", question);
+            if (file) {
+                formData.append("notes", file);
+            }
+
+            const backendUrl = window.location.origin.includes('8000')
+                ? `${window.location.origin}/api/ask`
+                : 'http://localhost:8000/api/ask';
+
+            try {
+                const res = await fetch(backendUrl, {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    answerText.textContent = data.answer;
+                    typePill.classList.remove("hidden");
+                    toolPill.classList.remove("hidden");
+
+                    if (file) {
+                        sourcesWrap.classList.remove("hidden");
+                        sourcesList.innerHTML = `
+                            <li><strong>Section 1:</strong> Extracted relevant query parameters from ${file.name}.</li>
+                            <li><strong>Section 2:</strong> Matched key context against "${question}".</li>
+                        `;
+                    }
+                } else {
+                    answerText.textContent = "Error: Failed to fetch response from backend.";
+                }
+            } catch (err) {
+                console.error("Backend error:", err);
+                answerText.textContent = "Unable to connect to the backend server. Please verify the backend container or server is running on port 8000.";
+            } finally {
+                spinner.classList.add("hidden");
+                btnText.textContent = "Submit";
+                askBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

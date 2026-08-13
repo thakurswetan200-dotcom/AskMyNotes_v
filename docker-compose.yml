@@ -1,0 +1,12 @@
+services:
+  askmynotes:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: askmynotes-app:latest
+    container_name: askmynotes_container
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
