@@ -1,0 +1,25 @@
+services:
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    image: askmynotes-classifier-backend:latest
+    container_name: classifier_backend
+    ports:
+      - "7860:7860"
+    environment:
+      - PORT=7860
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./Frontend
+      dockerfile: Dockerfile
+    image: askmynotes-classifier-frontend:latest
+    container_name: classifier_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped

@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: askmynotes-frontend
+    env: docker
+    dockerContext: Frontend
+    dockerfilePath: Frontend/Dockerfile
+    plan: free
+  - type: web
+    name: askmynotes-backend
+    env: docker
+    dockerContext: Backend
+    dockerfilePath: Backend/Dockerfile
+    plan: free

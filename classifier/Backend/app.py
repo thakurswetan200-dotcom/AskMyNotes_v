@@ -1,21 +1,18 @@
 import os
 import re
-import asyncio
-from typing import Optional
-from fastapi import FastAPI, UploadFile, File, Form
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel
 import joblib
+from fastapi import FastAPI
+from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 app = FastAPI(
     title="AskMyNotes Classifier API",
-    description="FastAPI Backend for AskMyNotes Document Q&A and Machine Learning Classification",
+    description="Machine Learning Question Classifier for AskMyNotes",
     version="1.0.0"
 )
 
-# Enable CORS for frontend integration
+# Enable CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -24,32 +21,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load Machine Learning Classifier Pipeline
-model = None
-model_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "askmynotes_classifier.pkl")
-if os.path.exists(model_path):
-    try:
-        model = joblib.load(model_path)
-    except Exception as e:
-        print(f"Warning: Could not load ML model: {e}")
-
-# Pydantic Schemas
-class SignupRequest(BaseModel):
-    fullName: str
-    email: str
-    password: str
+# Load the trained machine learning pipeline
+model_path = os.path.join(os.path.dirname(__file__), "askmynotes_classifier.pkl")
+model = joblib.load(model_path)
 
 class QuestionRequest(BaseModel):
     question: str
 
-class QuestionResponse(BaseModel):
-    question: str
-    answer: str
-
 def predict_enhanced(question: str):
-    if not model:
-        return "General", 50.0
-
     raw_pred = model.predict([question])[0]
     probs = model.predict_proba([question])[0]
     classes = list(model.classes_)
@@ -89,83 +68,31 @@ def predict_enhanced(question: str):
     
     return best_cls, confidence
 
-# API Routes
+
 @app.get("/")
 def home():
-    return {"message": "Welcome to the AskMyNotes Classifier API"}
+    return {"message": "AskMyNotes Classifier Backend API is running"}
+
 
 @app.get("/status")
 def status():
     return {"message": "AskMyNotes Classifier API Running", "status": "online"}
 
+
 @app.get("/health")
 def health():
     return {"status": "healthy"}
 
+
 @app.post("/predict")
-@app.post("/api/predict")
-def predict_endpoint(data: QuestionRequest):
+def predict(data: QuestionRequest):
     cleaned_q = data.question.strip()
     if not cleaned_q:
         return JSONResponse(status_code=400, content={"error": "Question cannot be empty"})
-    
+        
     best_cls, confidence_val = predict_enhanced(cleaned_q)
     return {
         "question": cleaned_q,
         "predicted_category": best_cls,
         "confidence": f"{confidence_val:.1f}%"
     }
-
-@app.post("/api/signup")
-async def signup(request: SignupRequest):
-    return {
-        "message": "Sign Up successful!",
-        "user": {
-            "fullName": request.fullName,
-            "email": request.email
-        }
-    }
-
-@app.post("/api/ask")
-async def ask_api(
-    question: str = Form(...),
-    notes: Optional[UploadFile] = File(None)
-):
-    cleaned_question = question.strip()
-    if not cleaned_question:
-        return {"answer": "Please provide a valid question."}
-    
-    # Simulate processing delay
-    await asyncio.sleep(0.5)
-
-    if notes and notes.filename:
-        answer = (
-            f"Based on your uploaded document '{notes.filename}', "
-            f"here is the answer for '{cleaned_question}': "
-            f"The notes highlight key concepts, problem statements, and structured solutions relevant to your query."
-        )
-    else:
-        answer = (
-            f"Regarding your question '{cleaned_question}': "
-            f"Here is the AI-generated answer based on standard note references."
-        )
-
-    return {"answer": answer}
-
-@app.post("/ask", response_model=QuestionResponse)
-async def ask_legacy(request: QuestionRequest):
-    cleaned_question = request.question.strip()
-    if not cleaned_question:
-        return QuestionResponse(
-            question="",
-            answer="Please enter a question."
-        )
-    return QuestionResponse(
-        question=cleaned_question,
-        answer=f'Your question "{cleaned_question}" was received successfully.'
-    )
-
-# Static files mounting if Frontend directory is present
-frontend_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "Frontend")
-if os.path.exists(frontend_dir):
-    app.mount("/frontend", StaticFiles(directory=frontend_dir, html=True), name="frontend")

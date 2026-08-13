@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AskMyNotes - AI Note Classifier</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <span class="badge">Hybrid ML + Intent Engine</span>
+            <h1>AskMyNotes Classifier</h1>
+            <p class="subtitle">Enter your question or note prompt to classify its subject category automatically.</p>
+        </div>
+
+        <form id="classifyForm">
+            <div class="input-group">
+                <label for="questionInput">Your Question / Note Snippet</label>
+                <textarea id="questionInput" placeholder="Type or paste your note question here..." required></textarea>
+            </div>
+
+            <div class="samples">
+                <span style="font-size: 0.8rem; color: var(--text-muted); align-self: center; margin-right: 4px;">Try sample:</span>
+                <button type="button" class="sample-btn" onclick="setSample('Contrast SQL relational databases with MongoDB document stores')">⚖️ Comparison</button>
+                <button type="button" class="sample-btn" onclick="setSample('Outline the chronological timeline of events leading up to World War 2')">📅 Timeline</button>
+                <button type="button" class="sample-btn" onclick="setSample('Implement a binary search tree in Python with insert and delete')">⚡ Action Item</button>
+                <button type="button" class="sample-btn" onclick="setSample('Synthesize findings from astrophysics regarding dark matter')">🧩 Synthesis</button>
+                <button type="button" class="sample-btn" onclick="setSample('What is backpropagation in neural networks?')">📖 Definition</button>
+            </div>
+
+            <button type="submit" class="btn-submit" id="submitBtn">
+                <span>Classify Question</span>
+            </button>
+        </form>
+
+        <div id="resultCard" class="result-card">
+            <div class="result-header">
+                <span>Predicted Category</span>
+                <span id="confidenceText" class="confidence-pill">0% Confidence</span>
+            </div>
+            <div class="result-category" id="categoryText">-</div>
+            <div class="result-question" id="questionText"></div>
+        </div>
+
+        <div class="footer">
+            <div><span class="status-dot"></span>Backend Ready</div>
+            <div>•</div>
+            <a href="/api/docs" target="_blank">Interactive Swagger Docs</a>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
