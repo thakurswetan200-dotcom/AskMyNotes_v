@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: askmynotes-classifier-frontend
+    env: docker
+    dockerContext: classifier/Frontend
+    dockerfilePath: classifier/Frontend/Dockerfile
+    plan: free
+
+  - type: web
+    name: askmynotes-classifier-backend
+    env: docker
+    dockerContext: classifier/Backend
+    dockerfilePath: classifier/Backend/Dockerfile
+    plan: free
