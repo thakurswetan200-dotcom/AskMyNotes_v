@@ -1,3 +1,15 @@
+// ==========================================
+// AskMyNotes Classifier - Frontend Script
+// ==========================================
+// FIX: On Render free tier each service runs in an isolated container.
+// The nginx proxy path /api/ → http://backend:7860 does NOT work because
+// "backend" is a Docker Compose internal hostname, not resolvable on Render.
+// Solution: call the backend public URL directly. CORS is already
+// configured on the backend to allow requests from this frontend origin.
+// ==========================================
+
+const BACKEND_URL = 'https://askmynotes-classifier-backend-latest.onrender.com';
+
 function setSample(text) {
     document.getElementById('questionInput').value = text;
 }
@@ -9,16 +21,22 @@ document.getElementById('classifyForm').addEventListener('submit', async (e) => 
 
     const btn = document.getElementById('submitBtn');
     const resultCard = document.getElementById('resultCard');
-    
+
     btn.disabled = true;
     btn.innerHTML = '<span>Classifying...</span>';
 
-    // Determine target API endpoint
-    let apiEndpoint = '/api/predict';
+    // Choose endpoint:
+    //  - Local Docker run (port 7860 or 8000): use /predict directly on this server
+    //  - Opening as a local file: call localhost backend
+    //  - Deployed on Render (no port in URL): call the backend's public URL directly
+    let apiEndpoint;
     if (window.location.port === '7860' || window.location.port === '8000') {
         apiEndpoint = '/predict';
     } else if (window.location.protocol === 'file:') {
         apiEndpoint = 'http://localhost:7860/predict';
+    } else {
+        // Deployed on Render — call the backend public URL directly
+        apiEndpoint = `${BACKEND_URL}/predict`;
     }
 
     try {
